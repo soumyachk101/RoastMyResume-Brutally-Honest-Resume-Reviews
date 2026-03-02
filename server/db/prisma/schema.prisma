@@ -1,0 +1,77 @@
+// packages/db/prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  avatarUrl     String?
+  passwordHash  String?
+  provider      String    @default("email")
+  tier          Tier      @default(FREE)
+  stripeCustomerId String?
+  resumes       Resume[]
+  payments      Payment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Resume {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
+  fileUrl     String?
+  fileType    String
+  rawText     String   @db.Text
+  parsedData  Json?
+  roasts      Roast[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+}
+
+model Roast {
+  id           String   @id @default(cuid())
+  resumeId     String
+  resume       Resume   @relation(fields: [resumeId], references: [id])
+  mode         RoastMode
+  overallScore Int
+  scores       Json
+  roastText    String   @db.Text
+  feedbackJson Json
+  shareUrl     String?  @unique
+  shareImage   String?
+  createdAt    DateTime @default(now())
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  stripePaymentId String   @unique
+  amount          Int
+  currency        String   @default("usd")
+  status          String
+  type            String
+  createdAt       DateTime @default(now())
+}
+
+enum Tier {
+  FREE
+  ROAST_PASS
+  PRO_MONTHLY
+  PRO_ANNUAL
+}
+
+enum RoastMode {
+  GORDON_RAMSAY
+  NICE
+}
