@@ -2,15 +2,18 @@
 
 import { useState, useCallback } from "react"
 import { useDropzone, FileRejection } from "react-dropzone"
-import { FileText, Upload, X, AlertCircle } from "lucide-react"
+import { FileText, Upload, X, AlertCircle, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function UploadZone() {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
+    const [isUploading, setIsUploading] = useState(false)
+    const [uploadSuccess, setUploadSuccess] = useState(false)
 
     const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
         setError(null)
+        setUploadSuccess(false)
 
         if (rejectedFiles.length > 0) {
             const rejection = rejectedFiles[0]
@@ -42,12 +45,55 @@ export function UploadZone() {
     const removeFile = () => {
         setFile(null)
         setError(null)
+        setUploadSuccess(false)
     }
 
-    const handleUpload = () => {
+    const handleUpload = async () => {
         if (!file) return
-        console.log("Uploading file:", file.name)
-        // TODO: Connect to presigned S3 URL upload mutation
+
+        setIsUploading(true)
+        setError(null)
+
+        try {
+            // 1. Get presigned URL from our API
+            const res = await fetch("/api/upload/url", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    filename: file.name,
+                    contentType: file.type,
+                }),
+            })
+
+            if (!res.ok) {
+                const errorData = await res.json()
+                throw new Error(errorData.error || "Failed to get upload URL")
+            }
+
+            const { url } = await res.json()
+
+            // 2. Upload file directly to S3
+            const uploadRes = await fetch(url, {
+                method: "PUT",
+                body: file,
+                headers: {
+                    "Content-Type": file.type,
+                },
+            })
+
+            if (!uploadRes.ok) throw new Error("Failed to upload file to storage")
+
+            setUploadSuccess(true)
+            console.log("File successfully uploaded to S3!")
+
+            // TODO: Here we could trigger a parsing job or redirect to a wait page
+
+        } catch (err: any) {
+            console.error(err)
+            setError(err.message || "An unexpected error occurred during upload.")
+        } finally {
+            setIsUploading(false)
+        }
     }
 
     return (
@@ -92,7 +138,8 @@ export function UploadZone() {
                         </div>
                         <button
                             onClick={removeFile}
-                            className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+                            disabled={isUploading || uploadSuccess}
+                            className="p-2 text-zinc-400 hover:text-white hover:bg-white/10 rounded-full transition-colors disabled:opacity-50"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -100,10 +147,23 @@ export function UploadZone() {
 
                     <Button
                         onClick={handleUpload}
+                        disabled={isUploading || uploadSuccess}
                         variant="default"
-                        className="w-full h-12 text-lg font-bold magnetic-btn"
+                        className={`w-full h-12 text-lg font-bold transition-all duration-300 ${uploadSuccess ? 'bg-green-500/20 text-green-500 hover:bg-green-500/30 border border-green-500/50' : 'magnetic-btn'}`}
                     >
-                        Roast My Resume 🔥
+                        {isUploading ? (
+                            <>
+                                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                                Uploading...
+                            </>
+                        ) : uploadSuccess ? (
+                            <>
+                                <CheckCircle2 className="w-5 h-5 mr-2" />
+                                Uploaded Successfully
+                            </>
+                        ) : (
+                            "Roast My Resume 🔥"
+                        )}
                     </Button>
                 </div>
             )}
