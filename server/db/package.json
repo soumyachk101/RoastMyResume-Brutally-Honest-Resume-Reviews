@@ -2,8 +2,8 @@
     "name": "@roastmyresume/db",
     "version": "0.1.0",
     "private": true,
-    "main": "src/index.ts",
-    "types": "src/index.ts",
+    "main": "./src/index.ts",
+    "types": "./src/index.ts",
     "scripts": {
         "db:generate": "prisma generate",
         "db:migrate:dev": "prisma migrate dev",
@@ -15,12 +15,12 @@
         "seed": "ts-node prisma/seed.ts"
     },
     "dependencies": {
-        "@prisma/client": "^5.10.0"
+        "@prisma/client": "^5.22.0"
     },
     "devDependencies": {
-        "prisma": "^5.10.0",
-        "typescript": "^5.4.0",
+        "@types/node": "^20.19.35",
+        "prisma": "^5.22.0",
         "ts-node": "^10.9.2",
-        "@types/node": "^20.0.0"
+        "typescript": "^5.9.3"
     }
 }
