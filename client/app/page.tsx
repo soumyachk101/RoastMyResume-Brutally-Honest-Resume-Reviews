@@ -47,7 +47,7 @@ export default function Home() {
           className="font-display text-5xl md:text-7xl font-bold tracking-tighter max-w-5xl leading-[1.1] mb-6"
         >
           Your Resume Sucks.<br />
-          <span className="fire-text">Let's Fix That.</span>
+          <span className="fire-text">Let&apos;s Fix That.</span>
         </motion.h1>
 
         <motion.p
@@ -56,8 +56,9 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="font-sans text-lg md:text-xl text-zinc-400 max-w-2xl mb-12"
         >
-          Brutally honest, AI-powered resume reviews that are actually fun to read.
-          Stop getting ghosted completely and start getting interviews.
+          <p className="max-w-[42rem] leading-normal text-zinc-400 sm:text-xl sm:leading-8 mx-auto font-sans">
+            Stop guessing why you&apos;re not getting interviews. Our AI recruiter will tear your resume apart so hiring managers don&apos;t have to.
+          </p>
         </motion.p>
 
         <motion.div

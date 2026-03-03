@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useDropzone } from "react-dropzone"
+import { useDropzone, FileRejection } from "react-dropzone"
 import { FileText, Upload, X, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -9,7 +9,7 @@ export function UploadZone() {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
 
-    const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
         setError(null)
 
         if (rejectedFiles.length > 0) {
@@ -56,8 +56,8 @@ export function UploadZone() {
                 <div
                     {...getRootProps()}
                     className={`relative overflow-hidden group cursor-pointer border-2 border-dashed rounded-2xl p-12 transition-all duration-300 text-center flex flex-col items-center justify-center gap-4 ${isDragActive
-                            ? "border-fire-orange bg-fire-orange/10 scale-[1.02]"
-                            : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                        ? "border-fire-orange bg-fire-orange/10 scale-[1.02]"
+                        : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
                         }`}
                 >
                     <input {...getInputProps()} />
